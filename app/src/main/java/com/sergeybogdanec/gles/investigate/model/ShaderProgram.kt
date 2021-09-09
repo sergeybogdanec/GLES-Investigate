@@ -2,6 +2,7 @@ package com.sergeybogdanec.gles.investigate.model
 
 import android.content.res.AssetManager
 import android.opengl.GLES31
+import android.os.Build.VERSION_CODES.P
 import android.util.Log
 import java.io.InputStreamReader
 import kotlin.IllegalStateException
@@ -44,13 +45,20 @@ class ShaderProgram(
     }
 
     private fun loadShader(type: Int, shaderName: String): Int {
-        return GLES31.glCreateShader(type).also { shader ->
-            val shaderCode = InputStreamReader(assets.open(shaderName))
-                .readLines()
-                .joinToString("\n")
-            GLES31.glShaderSource(shader, shaderCode)
-            GLES31.glCompileShader(shader)
+        val shaderId = GLES31.glCreateShader(type)
+        val error = IntArray(1)
+        val shaderCode = InputStreamReader(assets.open(shaderName))
+            .readLines()
+            .joinToString("\n")
+        GLES31.glShaderSource(shaderId, shaderCode)
+        GLES31.glCompileShader(shaderId)
+        GLES31.glGetShaderiv(shaderId, GLES31.GL_COMPILE_STATUS, error, 0)
+
+        if (error[0] == 0) {
+            throw IllegalStateException("Cannot load shader! code ${error[0]} log ${GLES31.glGetShaderInfoLog(shaderId)}")
         }
+
+        return shaderId
     }
 
     fun release() {

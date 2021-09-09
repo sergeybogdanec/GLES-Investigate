@@ -5,12 +5,12 @@ import android.graphics.SurfaceTexture
 import android.opengl.GLES11Ext
 import android.opengl.GLES20
 import android.opengl.GLES31
+import android.util.Log
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 class PreviewFrame(
     private val assets: AssetManager,
-    private val surfaceTexture: SurfaceTexture,
     private val textureId: Int
 ) {
 
@@ -98,8 +98,6 @@ class PreviewFrame(
     }
 
     fun draw(mvpMatrix: FloatArray, stMatrix: FloatArray, aspect: Float) {
-        // surfaceTexture.updateTexImage()
-
         GLES31.glUseProgram(shaderProgram.programId)
 
         GLES20.glUniformMatrix4fv(uMVPMatrix, 1, false, mvpMatrix, 0)
@@ -117,6 +115,8 @@ class PreviewFrame(
         GLES31.glUniform1i(sTexture, 0)
 
         GLES31.glDrawArrays(GLES31.GL_TRIANGLE_STRIP, 0, 4)
+
+        Log.d("Sergey", "Рисую")
 
         GLES31.glDisableVertexAttribArray(aPositionHandle)
         GLES31.glDisableVertexAttribArray(aTextureCoord)
