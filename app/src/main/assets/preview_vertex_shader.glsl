@@ -1,12 +1,13 @@
-#version 310
+#version 300 es
+
+in vec4 aPosition;
+in vec4 aTextureCoord;
 
 uniform mat4 uMVPMatrix;
 uniform mat4 uSTMatrix;
 uniform float uCRatio;
 
-attribute vec4 aPosition;
-attribute vec4 aTextureCoord;
-varying highp vec2 vTextureCoord;
+out vec2 vTextureCoord;
 
 void main() {
     vec4 scaledPos = aPosition;

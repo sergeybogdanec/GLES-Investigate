@@ -1,10 +1,12 @@
-#version 310
+#version 300 es
+#extension GL_OES_EGL_image_external_essl3 : enable
 
 precision mediump float;
+out vec4 fragColor;
 
-varying highp vec2 vTextureCoord;
-uniform lowp sampler2D sTexture;
+in vec2 vTextureCoord;
+uniform samplerExternalOES sTexture;
 
 void main() {
-    gl_FragColor = texture2D(sTexture, vTextureCoord);
+    fragColor = texture(sTexture, vTextureCoord);
 }
