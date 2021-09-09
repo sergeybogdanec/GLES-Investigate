@@ -1,4 +1,4 @@
-package com.sergeybogdanec.gles.investigate.shaders
+package com.sergeybogdanec.gles.investigate.model
 
 import android.content.res.AssetManager
 import android.opengl.GLES31
@@ -6,7 +6,7 @@ import android.util.Log
 import java.io.InputStreamReader
 import kotlin.IllegalStateException
 
-abstract class Shader(
+class ShaderProgram(
     vertexShaderAssetName: String,
     fragmentShaderAssetName: String,
     private val assets: AssetManager,
@@ -53,4 +53,9 @@ abstract class Shader(
         }
     }
 
+    fun release() {
+        GLES31.glDeleteShader(programId)
+        GLES31.glDeleteShader(vertexShaderId)
+        GLES31.glDeleteShader(fragmentShaderId)
+    }
 }

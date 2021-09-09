@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Gles Investigate</string>
+    <string name="toggle">Toggle</string>
 </resources>
