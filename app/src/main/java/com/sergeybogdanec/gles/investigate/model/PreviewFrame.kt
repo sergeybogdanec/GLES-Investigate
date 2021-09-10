@@ -1,17 +1,18 @@
 package com.sergeybogdanec.gles.investigate.model
 
 import android.content.res.AssetManager
-import android.graphics.SurfaceTexture
 import android.opengl.GLES11Ext
 import android.opengl.GLES20
 import android.opengl.GLES31
+import android.opengl.Matrix
 import android.util.Log
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 class PreviewFrame(
     private val assets: AssetManager,
-    private val textureId: Int
+    private val textureId: Int,
+    private val frameBufferId: Int
 ) {
 
     companion object {
@@ -21,6 +22,9 @@ class PreviewFrame(
         private const val VERTICES_XYZ_OFFSET = 0
         private const val VERTICES_UV_OFFSET = VERTICES_XYZ_SIZE * Float.SIZE_BYTES
     }
+
+    private val tMatrix = FloatArray(16)
+    private val vpMatrix = FloatArray(16)
 
     private val aPositionHandle: Int
         get() = getHandle("aPosition")
@@ -34,19 +38,16 @@ class PreviewFrame(
     private val uMVPMatrix: Int
         get() = getHandle("uMVPMatrix")
 
-    private val uSTMatrix: Int
-        get() = getHandle("uSTMatrix")
-
-    private val uCRatio: Int
-        get() = getHandle("uCRatio")
+    private val uTMatrix: Int
+        get() = getHandle("uTMatrix")
 
     private var vertexBuffer: Int = 0
     private val vertices = arrayOf(
         // X, Y, Z, U, V
-        -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-        1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
-        -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-        1.0f, -1.0f, 0.0f, 1.0f, 0.0f
+        -1f, -1f, 0f, 0f, 1f,
+        1f, -1f, 0f, 1f, 1f,
+        -1f, 1f, 0f, 0f, 0f,
+        1f, 1f, 0f, 1f, 0f
     ).toFloatArray()
 
     private val verticesBuffer
@@ -97,26 +98,38 @@ class PreviewFrame(
         GLES31.glBindBuffer(GLES31.GL_ARRAY_BUFFER, 0)
     }
 
-    fun draw(mvpMatrix: FloatArray, stMatrix: FloatArray, aspect: Float) {
+    fun draw(width: Int, height: Int) {
+        initViewPort(width, height)
+
+        val ratio = width.toFloat() / height
+
+        Matrix.setIdentityM(tMatrix, 0)
+        Matrix.scaleM(tMatrix, 0, ratio, 1f, 1f)
+
         GLES31.glUseProgram(shaderProgram.programId)
 
-        GLES20.glUniformMatrix4fv(uMVPMatrix, 1, false, mvpMatrix, 0)
-        GLES20.glUniformMatrix4fv(uSTMatrix, 1, false, stMatrix, 0)
-        GLES20.glUniform1f(uCRatio, aspect)
+        GLES31.glBindFramebuffer(GLES31.GL_FRAMEBUFFER, frameBufferId)
+        GLES31.glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
+        GLES31.glClear(GLES31.GL_DEPTH_BUFFER_BIT or GLES31.GL_COLOR_BUFFER_BIT)
+
+        GLES31.glUniform1i(sTexture, 0)
+        GLES31.glActiveTexture(GLES31.GL_TEXTURE0)
+        GLES31.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId)
 
         GLES31.glBindBuffer(GLES31.GL_ARRAY_BUFFER, vertexBuffer)
+
         GLES31.glEnableVertexAttribArray(aPositionHandle)
         GLES31.glVertexAttribPointer(aPositionHandle, VERTICES_XYZ_SIZE, GLES31.GL_FLOAT, false, VERTICES_STRIDE, VERTICES_XYZ_OFFSET)
+
         GLES31.glEnableVertexAttribArray(aTextureCoord)
         GLES31.glVertexAttribPointer(aTextureCoord, VERTICES_UV_SIZE, GLES31.GL_FLOAT, false, VERTICES_STRIDE, VERTICES_UV_OFFSET)
 
-        GLES31.glActiveTexture(GLES31.GL_TEXTURE0)
-        GLES31.glBindTexture(GLES31.GL_TEXTURE_2D, textureId)
-        GLES31.glUniform1i(sTexture, 0)
+        GLES20.glUniformMatrix4fv(uMVPMatrix, 1, false, vpMatrix, 0)
+        GLES20.glUniformMatrix4fv(uTMatrix, 1, false, tMatrix, 0)
 
         GLES31.glDrawArrays(GLES31.GL_TRIANGLE_STRIP, 0, 4)
 
-        Log.d("Sergey", "Рисую")
+        Log.d("Sergey", "Draw")
 
         GLES31.glDisableVertexAttribArray(aPositionHandle)
         GLES31.glDisableVertexAttribArray(aTextureCoord)
@@ -125,6 +138,25 @@ class PreviewFrame(
 
         GLES31.glUseProgram(0)
         GLES31.glFinish()
+    }
+
+    private fun initViewPort(width: Int, height: Int) {
+        GLES31.glViewport(0, 0, width, height)
+
+        val vMatrix = FloatArray(16)
+        val pMatrix = FloatArray(16)
+
+        val near = 1f
+        val far = 100f
+        val eyeZ = 1f
+        Matrix.setLookAtM(vMatrix, 0,
+            0.0f, 0.0f, eyeZ,
+            0.0f, 0.0f, 0.0f,
+            0.0f, 0.1f, 0.0f)
+
+        val ratio = width.toFloat() / height.toFloat()
+        Matrix.frustumM(pMatrix, 0, -ratio, ratio, -1.0f, 1.0f, near, far)
+        Matrix.multiplyMM(vpMatrix, 0, pMatrix, 0, vMatrix, 0)
     }
 
     fun release() {
