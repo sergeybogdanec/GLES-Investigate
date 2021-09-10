@@ -23,7 +23,6 @@ class MyGLRenderer(
     private var surfaceTexture: SurfaceTexture? = null
     private var isSurfaceUpdated: Boolean = false
 
-    private var aspectRatio: Float = 1f
     private var surfaceWidth: Int = 0
     private var surfaceHeight: Int = 0
 
@@ -76,8 +75,6 @@ class MyGLRenderer(
 
     override fun onSurfaceChanged(unused: GL10, width: Int, height: Int) {
         GLES31.glViewport(0, 0, width, height)
-
-        aspectRatio = width.toFloat() / height
 
         surfaceWidth = width
         surfaceHeight = height

@@ -91,7 +91,7 @@ class PreviewFrame(
 
         val buffers = IntArray(1) { 0 }
         GLES31.glGenBuffers(1, buffers, 0)
-        vertexBuffer = buffers.first()
+        vertexBuffer = buffers[0]
 
         GLES31.glBindBuffer(GLES31.GL_ARRAY_BUFFER, vertexBuffer)
         GLES31.glBufferData(GLES20.GL_ARRAY_BUFFER, vertices.size * Float.SIZE_BYTES, verticesBuffer, GLES20.GL_STATIC_DRAW)
