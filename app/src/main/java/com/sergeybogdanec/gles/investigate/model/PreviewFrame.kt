@@ -29,25 +29,25 @@ class PreviewFrame(
     private val aPositionHandle: Int
         get() = getHandle("aPosition")
 
-    private val aTextureCoord: Int
+    private val aTextureCoordHandle: Int
         get() = getHandle("aTextureCoord")
 
-    private val sTexture: Int
+    private val sTextureHandle: Int
         get() = getHandle("sTexture")
 
-    private val uMVPMatrix: Int
+    private val uMVPMatrixHandle: Int
         get() = getHandle("uMVPMatrix")
 
-    private val uTMatrix: Int
+    private val uTMatrixHandle: Int
         get() = getHandle("uTMatrix")
 
     private var vertexBuffer: Int = 0
     private val vertices = arrayOf(
         // X, Y, Z, U, V
-        -1f, -1f, 0f, 0f, 1f,
-        1f, -1f, 0f, 1f, 1f,
-        -1f, 1f, 0f, 0f, 0f,
-        1f, 1f, 0f, 1f, 0f
+        -1f, 1f, 0f, 0f, 1f,
+        1f, 1f, 0f, 1f, 1f,
+        -1f, -1f, 0f, 0f, 0f,
+        1f, -1f, 0f, 1f, 0f
     ).toFloatArray()
 
     private val verticesBuffer
@@ -104,15 +104,15 @@ class PreviewFrame(
         val ratio = width.toFloat() / height
 
         Matrix.setIdentityM(tMatrix, 0)
+        Matrix.rotateM(tMatrix, 0, 0f, 0f, 0f, 1f)
         Matrix.scaleM(tMatrix, 0, ratio, 1f, 1f)
+        Matrix.scaleM(tMatrix, 0, 1f, 1f, 1f)
 
         GLES31.glUseProgram(shaderProgram.programId)
 
         GLES31.glBindFramebuffer(GLES31.GL_FRAMEBUFFER, frameBufferId)
-        GLES31.glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
-        GLES31.glClear(GLES31.GL_DEPTH_BUFFER_BIT or GLES31.GL_COLOR_BUFFER_BIT)
 
-        GLES31.glUniform1i(sTexture, 0)
+        GLES31.glUniform1i(sTextureHandle, 0)
         GLES31.glActiveTexture(GLES31.GL_TEXTURE0)
         GLES31.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId)
 
@@ -121,23 +121,23 @@ class PreviewFrame(
         GLES31.glEnableVertexAttribArray(aPositionHandle)
         GLES31.glVertexAttribPointer(aPositionHandle, VERTICES_XYZ_SIZE, GLES31.GL_FLOAT, false, VERTICES_STRIDE, VERTICES_XYZ_OFFSET)
 
-        GLES31.glEnableVertexAttribArray(aTextureCoord)
-        GLES31.glVertexAttribPointer(aTextureCoord, VERTICES_UV_SIZE, GLES31.GL_FLOAT, false, VERTICES_STRIDE, VERTICES_UV_OFFSET)
+        GLES31.glEnableVertexAttribArray(aTextureCoordHandle)
+        GLES31.glVertexAttribPointer(aTextureCoordHandle, VERTICES_UV_SIZE, GLES31.GL_FLOAT, false, VERTICES_STRIDE, VERTICES_UV_OFFSET)
 
-        GLES20.glUniformMatrix4fv(uMVPMatrix, 1, false, vpMatrix, 0)
-        GLES20.glUniformMatrix4fv(uTMatrix, 1, false, tMatrix, 0)
+        GLES20.glUniformMatrix4fv(uMVPMatrixHandle, 1, false, vpMatrix, 0)
+        GLES20.glUniformMatrix4fv(uTMatrixHandle, 1, false, tMatrix, 0)
 
         GLES31.glDrawArrays(GLES31.GL_TRIANGLE_STRIP, 0, 4)
 
         Log.d("Sergey", "Draw")
 
         GLES31.glDisableVertexAttribArray(aPositionHandle)
-        GLES31.glDisableVertexAttribArray(aTextureCoord)
+        GLES31.glDisableVertexAttribArray(aTextureCoordHandle)
         GLES31.glBindBuffer(GLES31.GL_ARRAY_BUFFER, 0)
         GLES31.glBindTexture(GLES20.GL_TEXTURE_2D, 0)
 
         GLES31.glUseProgram(0)
-        GLES31.glFinish()
+        //GLES31.glFinish()
     }
 
     private fun initViewPort(width: Int, height: Int) {

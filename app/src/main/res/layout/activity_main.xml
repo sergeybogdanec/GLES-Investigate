@@ -8,8 +8,8 @@
     tools:context=".MainActivity"
     >
 
-    <FrameLayout
-        android:id="@+id/glViewContainer"
+    <com.sergeybogdanec.gles.investigate.view.MyGLSurfaceView
+        android:id="@+id/glView"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/toggleButton"
         android:layout_width="match_parent"
