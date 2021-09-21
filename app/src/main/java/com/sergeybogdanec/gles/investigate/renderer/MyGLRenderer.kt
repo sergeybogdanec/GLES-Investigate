@@ -42,23 +42,9 @@ class MyGLRenderer(
         GLES31.glGenTextures(1, textures, 0)
         val textureId = textures[0]
 
-        val buffers = IntArray(1)
-        GLES31.glGenFramebuffers(1, buffers, 0)
-
-        val bufferId = buffers[0]
-        GLES31.glBindFramebuffer(GLES31.GL_FRAMEBUFFER, bufferId)
-        GLES31.glBindTexture(GL_TEXTURE_EXTERNAL_OES, textureId)
-        GLES31.glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MAG_FILTER, GLES31.GL_LINEAR)
-        GLES31.glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MIN_FILTER, GLES31.GL_LINEAR)
-        GLES31.glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE)
-        GLES31.glTexParameteri(GL_TEXTURE_EXTERNAL_OES , GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE)
-        GLES31.glTexImage2D(GLES31.GL_TEXTURE_2D, 0, GLES31.GL_RGBA, surfaceWidth, surfaceHeight, 0, GLES31.GL_RGBA, GLES31.GL_UNSIGNED_BYTE, null)
-        GLES31.glFramebufferTexture2D(GLES31.GL_FRAMEBUFFER, GLES31.GL_COLOR_ATTACHMENT0, GLES31.GL_TEXTURE_2D, textureId, 0)
-
-        GLES31.glBindFramebuffer(GLES31.GL_FRAMEBUFFER, 0)
         GLES31.glBindTexture(GLES31.GL_TEXTURE_2D, 0)
 
-        _previewFrame = PreviewFrame(context.assets, textureId, bufferId).apply {
+        _previewFrame = PreviewFrame(context.assets, textureId).apply {
             setup()
         }
 
@@ -86,11 +72,13 @@ class MyGLRenderer(
         synchronized(this) {
             if (isSurfaceUpdated) {
                 isSurfaceUpdated = false
+                Log.d("Sergey", "update image")
                 surfaceTexture?.updateTexImage()
             }
         }
 
         GLES31.glClear(GLES31.GL_COLOR_BUFFER_BIT)
+        GLES31.glClearColor(0f, 0f, 0f, 1f)
 
         _previewFrame?.draw(surfaceWidth, surfaceHeight)
     }

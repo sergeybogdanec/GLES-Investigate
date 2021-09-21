@@ -1,4 +1,4 @@
-#version 300 es
+
 #extension GL_OES_EGL_image_external_essl3 : enable
 
 precision mediump float;
@@ -8,5 +8,5 @@ in vec2 vTextureCoord;
 uniform samplerExternalOES sTexture;
 
 void main() {
-    fragColor = texture(sTexture, vTextureCoord);
+    fragColor = vec4(255.0, 255.0, 0.0, 255.0);
 }

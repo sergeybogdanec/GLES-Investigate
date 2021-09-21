@@ -1,12 +1,9 @@
-
-
-in vec3 aPosition;
-in vec2 aTextureCoord;
-
+attribute vec3 aPosition;
+attribute highp vec2 aTextureCoord;
 uniform mat4 uMVPMatrix;
 uniform mat4 uTMatrix;
 
-out vec2 vTextureCoord;
+varying highp vec2 vTextureCoord;
 
 void main() {
     vTextureCoord = aTextureCoord;
