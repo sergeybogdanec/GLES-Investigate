@@ -1,6 +1,7 @@
 package com.sergeybogdanec.gles.investigate.model
 
 import android.content.res.AssetManager
+import android.graphics.SurfaceTexture
 import android.opengl.GLES11Ext
 import android.opengl.GLES20
 import android.opengl.GLES31
@@ -11,7 +12,8 @@ import java.nio.ByteOrder
 
 class PreviewFrame(
     private val assets: AssetManager,
-    private val textureId: Int
+    private val textureId: Int,
+    private val surfaceTexture: SurfaceTexture
 ) {
 
     companion object {
@@ -43,10 +45,10 @@ class PreviewFrame(
     private var vertexBuffer: Int = 0
     private val vertices = arrayOf(
         // X, Y, Z, U, V
-        -1.0f, -1.0f, 0f, 0f, 1f,
-        1.0f, -1.0f, 0f, 1f, 1f,
-        -1.0f, 1.0f, 0f, 0f, 0f,
-        1.0f, 1.0f, 0f, 1f, 0f
+        -1f, 1f, 0f, 0f, 1f,
+        1f, 1f, 0f, 1f, 1f,
+        -1f, -1f, 0f, 0f, 0f,
+        1f, -1f, 0f, 1f, 0f
     ).toFloatArray()
 
     private val verticesBuffer
@@ -73,8 +75,8 @@ class PreviewFrame(
             .takeIf { it != -1 }
             ?: GLES31.glGetAttribLocation(program, name)
 
-//        if (location == -1)
-//            throw IllegalStateException("Cannot get attrib/uniform location!")
+        if (location == -1)
+            throw IllegalStateException("Cannot get attrib/uniform location!")
 
         handleCache[name] = location
 
@@ -87,33 +89,22 @@ class PreviewFrame(
             fragmentShaderAssetName = "preview_fragment.glsl",
             assets = assets
         )
-
-//        val buffers = IntArray(1) { 0 }
-//        GLES31.glGenBuffers(1, buffers, 0)
-//        vertexBuffer = buffers[0]
-
-//        GLES31.glBindBuffer(GLES31.GL_ARRAY_BUFFER, vertexBuffer)
-//        GLES31.glBufferData(GLES20.GL_ARRAY_BUFFER, vertices.size * Float.SIZE_BYTES, verticesBuffer, GLES20.GL_STATIC_DRAW)
-//        GLES31.glBindBuffer(GLES31.GL_ARRAY_BUFFER, 0)
     }
 
     fun draw(width: Int, height: Int) {
         initViewPort(width, height)
 
         val ratio = width.toFloat() / height
-
-        Matrix.setIdentityM(tMatrix, 0)
-        Matrix.rotateM(tMatrix, 0, 0f, 0f, 0f, 1f)
-        Matrix.scaleM(tMatrix, 0, ratio, 1f, 1f)
-        Matrix.scaleM(tMatrix, 0, 1f, 1f, 1f)
+        surfaceTexture.getTransformMatrix(tMatrix)
+//        Matrix.rotateM(tMatrix, 0, 0f, 0f, 0f, 1f)
+        Matrix.scaleM(tMatrix, 0, 1f, 2f, 1f)
+//        Matrix.scaleM(tMatrix, 0, 1f, 1f, 1f)
 
         GLES31.glUseProgram(shaderProgram.programId)
 
         GLES31.glUniform1i(sTextureHandle, 0)
         GLES31.glActiveTexture(GLES31.GL_TEXTURE0)
         GLES31.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId)
-
-//        GLES31.glBindBuffer(GLES31.GL_ARRAY_BUFFER, vertexBuffer)
 
         verticesBuffer.position(VERTICES_XYZ_OFFSET)
         GLES31.glVertexAttribPointer(aPositionHandle, VERTICES_XYZ_SIZE, GLES31.GL_FLOAT, false, VERTICES_STRIDE, verticesBuffer)
@@ -136,7 +127,7 @@ class PreviewFrame(
         GLES31.glBindTexture(GLES20.GL_TEXTURE_2D, 0)
 
         GLES31.glUseProgram(0)
-        //GLES31.glFinish()
+        GLES31.glFinish()
     }
 
     private fun initViewPort(width: Int, height: Int) {
@@ -147,7 +138,7 @@ class PreviewFrame(
 
         val near = 1f
         val far = 100f
-        val eyeZ = -1f
+        val eyeZ = 1f
         Matrix.setLookAtM(vMatrix, 0,
             0.0f, 0.0f, eyeZ,
             0.0f, 0.0f, 0.0f,

@@ -2,11 +2,8 @@ package com.sergeybogdanec.gles.investigate.renderer
 
 import android.content.Context
 import android.graphics.SurfaceTexture
+import android.opengl.*
 import android.opengl.GLES11Ext.GL_TEXTURE_EXTERNAL_OES
-import android.opengl.GLES20
-import android.opengl.GLES31
-import android.opengl.GLSurfaceView
-import android.opengl.Matrix
 import android.util.Log
 import com.sergeybogdanec.gles.investigate.model.PreviewFrame
 import javax.microedition.khronos.egl.EGLConfig
@@ -44,11 +41,12 @@ class MyGLRenderer(
 
         GLES31.glBindTexture(GLES31.GL_TEXTURE_2D, 0)
 
-        _previewFrame = PreviewFrame(context.assets, textureId).apply {
-            setup()
-        }
-
         surfaceTexture = SurfaceTexture(textureId)
+            .also { surfaceTex ->
+                _previewFrame = PreviewFrame(context.assets, textureId, surfaceTex).apply {
+                    setup()
+                }
+            }
             .also(onTextureCreated)
             .apply {
                 setOnFrameAvailableListener {
@@ -77,8 +75,8 @@ class MyGLRenderer(
             }
         }
 
-        GLES31.glClear(GLES31.GL_COLOR_BUFFER_BIT)
         GLES31.glClearColor(0f, 0f, 0f, 1f)
+        GLES30.glClear(GLES30.GL_DEPTH_BUFFER_BIT or GLES30.GL_COLOR_BUFFER_BIT)
 
         _previewFrame?.draw(surfaceWidth, surfaceHeight)
     }
