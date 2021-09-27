@@ -45,10 +45,10 @@ class PreviewFrame(
     private var vertexBuffer: Int = 0
     private val vertices = floatArrayOf(
         // X, Y, Z, U, V
-        -1f, 1f, 0f, 0f, 1f,
-        1f, 1f, 0f, 1f, 1f,
+        -1f, 1f, 0f, 0f, 0f,
+        1f, 1f, 0f, 0f, 0f,
         -1f, -1f, 0f, 0f, 0f,
-        1f, -1f, 0f, 1f, 0f
+        1f, -1f, 0f, 0f, 0f
     )
 
     private val verticesBuffer
@@ -98,21 +98,10 @@ class PreviewFrame(
         val heightRatio = videoHeight / surfaceHeight.toFloat()
 
         surfaceTexture.getTransformMatrix(tMatrix)
+        Matrix.translateM(tMatrix, 0, -1f, 0f, 0f)
         Matrix.scaleM(tMatrix, 0, widthRatio, heightRatio, 0f)
 
-        Log.d("Sergey", "\n${tMatrix.mapIndexed { i, number -> 
-            if (i % 4 == 0) {
-                number.toString() + "\n"
-            } else {
-                number.toString()
-            }
-        }}")
-        //Matrix.rotateM(tMatrix, 0, videoRotation.toFloat(), 0f, 0f, 1f)
-        //Matrix.scaleM(tMatrix, 0, widthRatio, heightRatio, 1f)
-
-//        Matrix.rotateM(tMatrix, 0, 0f, 0f, 0f, 1f)
-//        Matrix.scaleM(tMatrix, 0, 1f, 2f, 1f)
-//        Matrix.scaleM(tMatrix, 0, 1f, 1f, 1f)
+        Log.d("Sergey", tMatrix.joinToString())
 
         GLES31.glUseProgram(shaderProgram.programId)
 
@@ -146,22 +135,7 @@ class PreviewFrame(
 
     private fun initViewPort(width: Int, height: Int) {
         GLES31.glViewport(0, 0, width, height)
-
-        val vMatrix = FloatArray(16)
-        val pMatrix = FloatArray(16)
-
-        val near = 1f
-        val far = 100f
-        val eyeZ = 1f
-        Matrix.setLookAtM(vMatrix, 0,
-            0.0f, 0.0f, eyeZ,
-            0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f)
-
-        val ratio = width.toFloat() / height.toFloat()
         Matrix.setIdentityM(vpMatrix, 0)
-        //Matrix.frustumM(pMatrix, 0, -ratio, ratio, -1.0f, 1.0f, near, far)
-        //Matrix.multiplyMM(vpMatrix, 0, pMatrix, 0, vMatrix, 0)
     }
 
     fun release() {
