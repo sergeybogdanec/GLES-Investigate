@@ -14,8 +14,7 @@ import com.sergeybogdanec.gles.investigate.view.MyGLSurfaceView
 class MainActivity : AppCompatActivity() {
 
     private val selectFileLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        player.setMediaItem(MediaItem.fromUri(uri))
-        player.prepare()
+        glView.selectFile(uri)
     }
 
     private val player by lazy {
@@ -35,10 +34,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        glView.currentTexture.observe(this) { surfaceTexture ->
-            player.setVideoSurface(Surface(surfaceTexture))
-            Log.d("Sergey", "Surface player")
-        }
+        glView.player = player
 
         toggleButton.setOnClickListener {
             if (player.isPlaying) {

@@ -5,6 +5,7 @@ import android.graphics.SurfaceTexture
 import android.opengl.*
 import android.opengl.GLES11Ext.GL_TEXTURE_EXTERNAL_OES
 import android.util.Log
+import android.util.Size
 import com.sergeybogdanec.gles.investigate.model.PreviewFrame
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
@@ -28,6 +29,16 @@ class MyGLRenderer(
         GLES31.glEnable(GLES31.GL_DEPTH_TEST)
     }
 
+    private var width = 0
+    private var height = 0
+    private var rotation = 0
+
+    fun setVideoParams(videoSize: Size, videoRotation: Int) {
+        width = videoSize.width
+        height = videoSize.height
+        rotation = videoRotation
+    }
+
     private fun initGl() {
         release()
 
@@ -38,6 +49,12 @@ class MyGLRenderer(
         val textures = IntArray(1)
         GLES31.glGenTextures(1, textures, 0)
         val textureId = textures[0]
+
+        GLES31.glBindTexture(GL_TEXTURE_EXTERNAL_OES, textureId)
+        GLES20.glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MAG_FILTER, GLES31.GL_LINEAR)
+        GLES20.glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MIN_FILTER, GLES31.GL_NEAREST)
+        GLES20.glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE)
+        GLES20.glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE)
 
         GLES31.glBindTexture(GLES31.GL_TEXTURE_2D, 0)
 
@@ -78,7 +95,7 @@ class MyGLRenderer(
         GLES31.glClearColor(0f, 0f, 0f, 1f)
         GLES30.glClear(GLES30.GL_DEPTH_BUFFER_BIT or GLES30.GL_COLOR_BUFFER_BIT)
 
-        _previewFrame?.draw(surfaceWidth, surfaceHeight)
+        _previewFrame?.draw(surfaceWidth, surfaceHeight, width, height, rotation)
     }
 
     private fun release() {

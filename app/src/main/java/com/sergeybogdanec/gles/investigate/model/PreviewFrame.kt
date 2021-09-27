@@ -43,13 +43,13 @@ class PreviewFrame(
         get() = getHandle("uTMatrix")
 
     private var vertexBuffer: Int = 0
-    private val vertices = arrayOf(
+    private val vertices = floatArrayOf(
         // X, Y, Z, U, V
         -1f, 1f, 0f, 0f, 1f,
         1f, 1f, 0f, 1f, 1f,
         -1f, -1f, 0f, 0f, 0f,
         1f, -1f, 0f, 1f, 0f
-    ).toFloatArray()
+    )
 
     private val verticesBuffer
         get() = ByteBuffer
@@ -91,13 +91,27 @@ class PreviewFrame(
         )
     }
 
-    fun draw(width: Int, height: Int) {
-        initViewPort(width, height)
+    fun draw(surfaceWidth: Int, surfaceHeight: Int, videoWidth: Int, videoHeight: Int, videoRotation: Int) {
+        initViewPort(surfaceWidth, surfaceHeight)
 
-        val ratio = width.toFloat() / height
+        val widthRatio =  videoWidth / surfaceWidth.toFloat()
+        val heightRatio = videoHeight / surfaceHeight.toFloat()
+
         surfaceTexture.getTransformMatrix(tMatrix)
+        Matrix.scaleM(tMatrix, 0, widthRatio, heightRatio, 0f)
+
+        Log.d("Sergey", "\n${tMatrix.mapIndexed { i, number -> 
+            if (i % 4 == 0) {
+                number.toString() + "\n"
+            } else {
+                number.toString()
+            }
+        }}")
+        //Matrix.rotateM(tMatrix, 0, videoRotation.toFloat(), 0f, 0f, 1f)
+        //Matrix.scaleM(tMatrix, 0, widthRatio, heightRatio, 1f)
+
 //        Matrix.rotateM(tMatrix, 0, 0f, 0f, 0f, 1f)
-        Matrix.scaleM(tMatrix, 0, 1f, 2f, 1f)
+//        Matrix.scaleM(tMatrix, 0, 1f, 2f, 1f)
 //        Matrix.scaleM(tMatrix, 0, 1f, 1f, 1f)
 
         GLES31.glUseProgram(shaderProgram.programId)
@@ -142,11 +156,12 @@ class PreviewFrame(
         Matrix.setLookAtM(vMatrix, 0,
             0.0f, 0.0f, eyeZ,
             0.0f, 0.0f, 0.0f,
-            0.0f, 0.1f, 0.0f)
+            0.0f, 1.0f, 0.0f)
 
         val ratio = width.toFloat() / height.toFloat()
-        Matrix.frustumM(pMatrix, 0, -ratio, ratio, -1.0f, 1.0f, near, far)
-        Matrix.multiplyMM(vpMatrix, 0, pMatrix, 0, vMatrix, 0)
+        Matrix.setIdentityM(vpMatrix, 0)
+        //Matrix.frustumM(pMatrix, 0, -ratio, ratio, -1.0f, 1.0f, near, far)
+        //Matrix.multiplyMM(vpMatrix, 0, pMatrix, 0, vMatrix, 0)
     }
 
     fun release() {
